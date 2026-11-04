@@ -473,7 +473,7 @@
               '</div></article>';
           });
           pages.push('<section class="pdf-page">'+
-            '<header class="pdf-header"><div class="pdf-heading"><div class="pdf-title">U KHAO CHI CHAN PATTAYA</div><div class="pdf-title-th">รายงานผู้รับเหมาประจำวัน</div></div>'+
+            '<header class="pdf-header"><img class="pdf-logo" src="./khao-chi-chan-logo.svg" alt="Khao Chi Chan Pattaya"><div class="pdf-heading"><div class="pdf-title">U Khaochichan pattaya</div><div class="pdf-title-th">รายงานผู้รับเหมาประจำวัน</div></div>'+
             '<div class="pdf-subtitle">วันที่ '+escapeHtml(selected)+' <span>หน้า '+(pages.length+1)+' / '+totalPages+'</span></div></header>'+
             '<div class="pdf-records">'+cards+'</div>'+
             '<footer class="pdf-footer">ลงชื่อเจ้าหน้าที่ รปภ. ผู้ตรวจสอบ: ....................................................</footer>'+
@@ -486,7 +486,7 @@
           '.pdf-root{width:210mm;font-family:Sarabun,sans-serif;color:#172033;background:#fff}'+
           '.pdf-page{width:210mm;height:296mm;padding:6mm;display:flex;flex-direction:column;gap:1.2mm;overflow:hidden;background:#fff;page-break-after:always;break-after:page}'+
           '.pdf-page:last-child{page-break-after:auto;break-after:auto}'+
-          '.pdf-header{height:18mm;flex:0 0 18mm;border-bottom:1.2px solid #80004f;padding:0 1mm 1.5mm;display:flex;align-items:center;gap:3mm}'+
+          '.pdf-header{height:22mm;flex:0 0 22mm;border-bottom:1.2px solid #80004f;padding:0 1mm 1.5mm;display:flex;align-items:center;gap:3mm}.pdf-logo{width:19mm;height:19mm;object-fit:contain;flex:0 0 19mm}'+
           '.pdf-heading{display:flex;flex-direction:column;justify-content:center}.pdf-title{font-size:13pt;font-weight:700;line-height:1.2;color:#80004f}.pdf-title-th{font-size:10pt;font-weight:700;line-height:1.2;margin-top:1mm}'+
           '.pdf-subtitle{font-size:9pt;display:flex;justify-content:space-between;margin-top:1mm}'+
           '.pdf-records{flex:1;min-height:0;display:flex;flex-direction:column;gap:1mm}'+
