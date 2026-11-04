@@ -517,6 +517,14 @@
           await Promise.all(imgs.map(async img=>{
             const source=img.getAttribute('src');
             if(!source)return;
+            // โลโก้ที่ฝังเป็น Data URL อยู่แล้ว ไม่ต้อง fetch/แปลงซ้ำ
+            if(source.startsWith('data:image/')){
+              try{
+                if(img.decode) await img.decode();
+                else if(!(img.complete&&img.naturalWidth>0)) await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;});
+              }catch(err){console.warn('ไม่สามารถถอดรหัสโลโก้ PDF ได้:',err);}
+              return;
+            }
             try{
               const response=await fetch(source,{mode:'cors',cache:'no-store'});
               if(!response.ok)throw new Error('HTTP '+response.status);
