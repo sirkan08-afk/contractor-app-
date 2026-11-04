@@ -34,8 +34,8 @@
     </section>
     <!-- Header -->
     <header class="bg-slate-800 text-white shadow-md p-4 text-center">
-        <h1 class="text-xl font-bold">HOTEL CONTRACTOR REGISTRATION</h1>
-        <p class="text-xs text-slate-300">Hotel Security Department - Supabase Cloud</p><div class="text-xs mt-1">ผู้ใช้งาน: <span id="currentUserLabel">-</span> <button onclick="logout()" class="underline ml-2">ออกจากระบบ</button></div>
+        <h1 class="text-xl font-bold">U KHAO CHI CHAN PATTAYA CONTRACTOR</h1>
+        <p class="text-xs text-slate-300">Security Department - Supabase Cloud</p><div class="text-xs mt-1">ผู้ใช้งาน: <span id="currentUserLabel">-</span> <button onclick="logout()" class="underline ml-2">ออกจากระบบ</button></div>
     </header>
 
     <!-- Navigation Tabs -->
@@ -473,7 +473,7 @@
               '</div></article>';
           });
           pages.push('<section class="pdf-page">'+
-            '<header class="pdf-header"><div class="pdf-title">รายงานผู้รับเหมาประจำวัน</div>'+
+            '<header class="pdf-header"><img class="pdf-logo" src="./icon.svg" alt="U Khao Chi Chan Pattaya"><div class="pdf-heading"><div class="pdf-title">U Khao Chi Chan Pattaya Contractor</div><div class="pdf-title-th">รายงานผู้รับเหมาประจำวัน</div></div>'+
             '<div class="pdf-subtitle">วันที่ '+escapeHtml(selected)+' <span>หน้า '+(pages.length+1)+' / '+totalPages+'</span></div></header>'+
             '<div class="pdf-records">'+cards+'</div>'+
             '<footer class="pdf-footer">ลงชื่อเจ้าหน้าที่ รปภ. ผู้ตรวจสอบ: ....................................................</footer>'+
@@ -486,8 +486,8 @@
           '.pdf-root{width:210mm;font-family:Sarabun,sans-serif;color:#172033;background:#fff}'+
           '.pdf-page{width:210mm;height:296mm;padding:6mm;display:flex;flex-direction:column;gap:1.2mm;overflow:hidden;background:#fff;page-break-after:always;break-after:page}'+
           '.pdf-page:last-child{page-break-after:auto;break-after:auto}'+
-          '.pdf-header{height:13mm;flex:0 0 13mm;border-bottom:1.2px solid #334155;padding:0 1mm 1.5mm;display:flex;flex-direction:column;justify-content:center}'+
-          '.pdf-title{font-size:15pt;font-weight:700;line-height:1.2}'+
+          '.pdf-header{height:18mm;flex:0 0 18mm;border-bottom:1.2px solid #80004f;padding:0 1mm 1.5mm;display:flex;align-items:center;gap:3mm}'+
+          '.pdf-logo{width:16mm;height:16mm;object-fit:contain;flex:0 0 16mm}.pdf-heading{display:flex;flex-direction:column;justify-content:center}.pdf-title{font-size:13pt;font-weight:700;line-height:1.2;color:#80004f}.pdf-title-th{font-size:10pt;font-weight:700;line-height:1.2;margin-top:1mm}'+
           '.pdf-subtitle{font-size:9pt;display:flex;justify-content:space-between;margin-top:1mm}'+
           '.pdf-records{flex:1;min-height:0;display:flex;flex-direction:column;gap:1mm}'+
           '.pdf-record{flex:1;min-height:0;border:0.35mm solid #cbd5e1;border-radius:1.5mm;padding:1.3mm;display:flex;align-items:center;gap:2mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}'+
