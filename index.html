@@ -28,19 +28,25 @@
         <p class="text-sm text-center text-slate-500">เข้าสู่ระบบด้วย User ID</p>
         <div><label class="text-sm font-semibold">User ID</label><input id="loginUserId" class="w-full mt-1 p-3 border rounded-lg" placeholder="เช่น ADMIN001" autocomplete="username"></div>
         <div><label class="text-sm font-semibold">Password</label><input id="loginPassword" type="password" class="w-full mt-1 p-3 border rounded-lg" placeholder="รหัสผ่าน" autocomplete="current-password"></div>
-        <button id="loginButton" type="button" class="w-full bg-blue-600 text-white font-bold p-3 rounded-lg">เข้าสู่ระบบ</button>
+        <button id="loginButton" type="button" class="w-full bg-[#80004f] text-white font-bold p-3 rounded-lg">เข้าสู่ระบบ</button>
         <p id="loginMessage" class="text-sm text-center text-rose-600"></p>
       </div>
     </section>
     <!-- Header -->
-    <header class="bg-slate-800 text-white shadow-md p-4 text-center">
-        <h1 class="text-xl font-bold">U KHAO CHI CHAN PATTAYA CONTRACTOR</h1>
-        <p class="text-xs text-slate-300">Security Department - Supabase Cloud</p><div class="text-xs mt-1">ผู้ใช้งาน: <span id="currentUserLabel">-</span> <button onclick="logout()" class="underline ml-2">ออกจากระบบ</button></div>
+    <header class="bg-[#80004f] text-white shadow-md px-4 py-3">
+        <div class="max-w-lg mx-auto flex items-center gap-3">
+            <img src="./khao-chi-chan-logo.svg" alt="Khao Chi Chan Pattaya" class="w-14 h-14 object-contain rounded bg-white p-1 shrink-0">
+            <div class="min-w-0 flex-1">
+                <h1 class="text-xl font-bold tracking-wide">CONTRACTOR REGISTRATION</h1>
+                <p class="text-xs text-pink-100">Security Department - Supabase Cloud</p>
+                <div class="text-xs mt-1">ผู้ใช้งาน: <span id="currentUserLabel">-</span> <button onclick="logout()" class="underline ml-2">ออกจากระบบ</button></div>
+            </div>
+        </div>
     </header>
 
     <!-- Navigation Tabs -->
     <nav class="bg-white border-b flex justify-around p-2 shadow-sm">
-        <button onclick="switchTab('register')" id="tab-register" class="flex-1 py-2 text-center font-bold text-blue-600 border-b-2 border-blue-600">ลงทะเบียน</button>
+        <button onclick="switchTab('register')" id="tab-register" class="flex-1 py-2 text-center font-bold text-[#80004f] border-b-2 border-[#80004f]">ลงทะเบียน</button>
         <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-2 text-center font-semibold text-slate-500">รายงานประจำวัน</button>
     </nav>
 
@@ -55,13 +61,13 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">ภาพบัตรประชาชน</label>
                         <div class="flex gap-2 items-center">
-                            <input type="file" accept="image/*" id="idCardImage" class="flex-1 min-w-0 text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="compressImage(event, 'idPreview', 'idPreviewContainer')">
+                            <input type="file" accept="image/*" id="idCardImage" class="flex-1 min-w-0 text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-[#f8eaf1] file:text-[#80004f] hover:file:bg-blue-100" onchange="compressImage(event, 'idPreview', 'idPreviewContainer')">
                             <button type="button" onclick="document.getElementById('idCardCamera').click()" class="shrink-0 bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-lg">📷 ถ่ายรูป</button>
                             <input type="file" accept="image/*" capture="environment" id="idCardCamera" class="hidden" onchange="compressImage(event, 'idPreview', 'idPreviewContainer')">
                         </div>
                         <div id="idPreviewContainer" class="mt-2 hidden text-center">
                             <img id="idPreview" class="h-32 object-contain mx-auto rounded border" alt="Preview ID">
-                            <button onclick="runOCR()" id="ocrBtn" class="mt-2 w-full bg-blue-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-blue-700">🔍 อ่านชื่อจากภาพ (OCR)</button>
+                            <button onclick="runOCR()" id="ocrBtn" class="mt-2 w-full bg-blue-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-[#65003f]">🔍 อ่านชื่อจากภาพ (OCR)</button>
                             <p id="ocrStatus" class="text-center text-xs text-slate-500 mt-1"></p>
                         </div>
                     </div>
@@ -84,7 +90,7 @@
                 <h2 class="text-md font-bold text-slate-700 mb-2">📝 ข้อมูลผู้รับเหมา</h2>
                 <div>
                     <label class="block text-xs font-medium text-slate-600">เลขบัตรประชาชน 4 ตัวท้าย</label>
-                    <input type="text" id="idNumber" maxlength="4" inputmode="numeric" placeholder="กรอกเลข 4 ตัวท้าย เพื่อเข้า / ออก" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="idNumber" maxlength="4" inputmode="numeric" placeholder="กรอกเลข 4 ตัวท้าย เพื่อเข้า / ออก" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#80004f] outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600">ชื่อ - นามสกุล (จำเป็นเฉพาะตอนลงทะเบียนเข้า)</label>
@@ -129,7 +135,7 @@
                     <input type="date" id="reportDate" class="w-full mt-1 p-2 border rounded-lg text-sm" onchange="fetchCloudData()">
                 </div>
                 <div class="grid grid-cols-2 gap-3 text-center">
-                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <div class="bg-blue-50 p-3 rounded-lg border border-[#ead0df]">
                         <span id="statTotal" class="text-xl font-bold text-blue-700">0</span>
                         <p class="text-xs text-slate-600">จำนวนผู้รับเหมารวมทีมงาน</p>
                     </div>
@@ -164,7 +170,7 @@
         </div>
     </main>
 
-    <footer class="bg-slate-800 text-white text-center py-3 text-xs mt-auto">
+    <footer class="bg-[#80004f] text-white text-center py-3 text-xs mt-auto">
         &copy; 2026 Security Department - Global Cloud Synchronized
     </footer>
 
