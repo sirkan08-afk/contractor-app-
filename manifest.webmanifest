@@ -1,0 +1,19 @@
+{
+  "name": "Khao Chi Chan Pattaya - Contractor Registration",
+  "short_name": "Contractor",
+  "description": "Contractor Daily Registration",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#80004f",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
