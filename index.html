@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Contractor Registration</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#80004f">
+<link rel="apple-touch-icon" href="./icon-192.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tesseract.js OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v4.0.2/dist/tesseract.min.js"></script>
+    <!-- SheetJS Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- html2pdf.js สำหรับสร้าง PDF ภาษาไทยและรูปภาพ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+    <section id="loginScreen" class="fixed inset-0 z-50 bg-slate-100 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-4">
+        <h1 class="text-xl font-bold text-center">CONTRACTOR REGISTRATION V8</h1>
+        <p class="text-sm text-center text-slate-500">เข้าสู่ระบบด้วย User ID</p>
+        <div><label class="text-sm font-semibold">User ID</label><input id="loginUserId" class="w-full mt-1 p-3 border rounded-lg" placeholder="เช่น ADMIN001" autocomplete="username"></div>
+        <div><label class="text-sm font-semibold">Password</label><input id="loginPassword" type="password" class="w-full mt-1 p-3 border rounded-lg" placeholder="รหัสผ่าน" autocomplete="current-password"></div>
+        <button id="loginButton" type="button" class="w-full bg-blue-600 text-white font-bold p-3 rounded-lg">เข้าสู่ระบบ</button>
+        <p id="loginMessage" class="text-sm text-center text-rose-600"></p>
+      </div>
+    </section>
+    <!-- Header -->
+    <header class="bg-slate-800 text-white shadow-md p-4 text-center">
+        <h1 class="text-xl font-bold">HOTEL CONTRACTOR REGISTRATION</h1>
+        <p class="text-xs text-slate-300">Hotel Security Department - Supabase Cloud</p><div class="text-xs mt-1">ผู้ใช้งาน: <span id="currentUserLabel">-</span> <button onclick="logout()" class="underline ml-2">ออกจากระบบ</button></div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b flex justify-around p-2 shadow-sm">
+        <button onclick="switchTab('register')" id="tab-register" class="flex-1 py-2 text-center font-bold text-blue-600 border-b-2 border-blue-600">ลงทะเบียน</button>
+        <button onclick="switchTab('report')" id="tab-report" class="flex-1 py-2 text-center font-semibold text-slate-500">รายงานประจำวัน</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4 max-w-lg mx-auto w-full">
+        <!-- REGISTRATION SECTION -->
+        <div id="section-register" class="space-y-4">
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h2 class="text-md font-bold text-slate-700 mb-1">📸 ภาพบัตรประชาชน & ป้ายทะเบียน (ไม่บังคับ)</h2><p class="text-xs text-slate-500 mb-3">สามารถถ่ายภาพหรือเลือกไฟล์จากอุปกรณ์ได้ โดยไม่จำเป็นต้องแนบรูปเพื่อบันทึกข้อมูล</p>
+                
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ภาพบัตรประชาชน</label>
+                        <input type="file" accept="image/*" id="idCardImage" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" onchange="compressImage(event, 'idPreview', 'idPreviewContainer')">
+                        <div id="idPreviewContainer" class="mt-2 hidden text-center">
+                            <img id="idPreview" class="h-32 object-contain mx-auto rounded border" alt="Preview ID">
+                            <button onclick="runOCR()" id="ocrBtn" class="mt-2 w-full bg-blue-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-blue-700">🔍 อ่านชื่อจากภาพ (OCR)</button>
+                            <p id="ocrStatus" class="text-center text-xs text-slate-500 mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ภาพป้ายทะเบียนรถ</label>
+                        <input type="file" accept="image/*" id="carImage" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" onchange="compressImage(event, 'carPreview', 'carPreviewContainer')">
+                        <div id="carPreviewContainer" class="mt-2 hidden text-center">
+                            <img id="carPreview" class="h-32 object-contain mx-auto rounded border" alt="Preview Car">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow space-y-3">
+                <h2 class="text-md font-bold text-slate-700 mb-2">📝 ข้อมูลผู้รับเหมา</h2>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">เลขบัตรประชาชน 4 ตัวท้าย</label>
+                    <input type="text" id="idNumber" maxlength="4" inputmode="numeric" placeholder="กรอกเลข 4 ตัวท้าย เพื่อเข้า / ออก" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">ชื่อ - นามสกุล (จำเป็นเฉพาะตอนลงทะเบียนเข้า)</label>
+                    <input type="text" id="fullName" placeholder="กรอกชื่อ-นามสกุล" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">บริษัทผู้รับเหมา</label>
+                    <input type="text" id="companyName" placeholder="ชื่อบริษัท" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">ทะเบียนรถ</label>
+                    <input type="text" id="carPlate" placeholder="เช่น กข 1234 ชลบุรี" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">แผนกที่เข้าปฏิบัติงาน</label>
+                    <select id="department" class="w-full mt-1 p-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="Engineering / ซ่อมบำรุง">Engineering / ซ่อมบำรุง</option>
+                        <option value="Housekeeping / แม่บ้าน">Housekeeping / แม่บ้าน</option>
+                        <option value="F&B / อาหารและเครื่องดื่ม">F&B / อาหารและเครื่องดื่ม</option>
+                        <option value="Security / รักษาความปลอดภัย">Security / รักษาความปลอดภัย</option>
+                        <option value="Other / อื่นๆ">Other / อื่นๆ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">จำนวนทีมงานทั้งหมด (รวมผู้ลงทะเบียน)</label>
+                    <input type="number" id="teamSize" min="1" max="500" value="1" class="w-full mt-1 p-2 border rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">สถานที่ปฏิบัติงาน (จุดภายในโรงแรม)</label>
+                    <input type="text" id="workLocation" placeholder="เช่น อาคาร A ชั้น 2, สระว่ายน้ำ, ห้องอาหาร" class="w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <button onclick="saveContractor()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow hover:bg-emerald-700 transition">💾 บันทึกข้อมูล (เข้า / ออก)</button>
+            </div>
+        </div>
+
+        <!-- REPORT SECTION -->
+        <div id="section-report" class="space-y-4 hidden">
+            <div class="bg-white p-4 rounded-xl shadow space-y-3">
+                <h2 class="text-md font-bold text-slate-700">📊 รายงานผู้รับเหมาประจำวัน</h2>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600">เลือกวันที่</label>
+                    <input type="date" id="reportDate" class="w-full mt-1 p-2 border rounded-lg text-sm" onchange="fetchCloudData()">
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <span id="statTotal" class="text-xl font-bold text-blue-700">0</span>
+                        <p class="text-xs text-slate-600">จำนวนผู้รับเหมารวมทีมงาน</p>
+                    </div>
+                    <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                        <span id="statCompany" class="text-xl font-bold text-emerald-700">0</span>
+                        <p class="text-xs text-slate-600">บริษัท</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="exportExcel()" class="flex-1 bg-green-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-green-700">📥 Export Excel</button>
+                    <button onclick="exportPDF()" class="flex-1 bg-rose-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-rose-700">📄 Export PDF (6 รายการ/แผ่น)</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white p-4 rounded-xl shadow overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 border-b">
+                            <th class="p-2">เวลาเข้า/ออก</th>
+                            <th class="p-2">ชื่อ - สกุล</th>
+                            <th class="p-2">บริษัท / สถานที่</th>
+                            <th class="p-2">ทะเบียนรถ</th>
+                            <th class="p-2">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr><td colspan="4" class="text-center p-4 text-slate-400">ไม่พบข้อมูลในวันที่เลือก</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-800 text-white text-center py-3 text-xs mt-auto">
+        &copy; 2026 Hotel Security Department - Global Cloud Synchronized
+    </footer>
+
+    <!-- Script Logic -->
+    <script>
+      const SUPABASE_URL = 'https://aclsqitjruccxkzjtxbl.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_46ffZxy1L4lJQv_Kgzmuzg_V97pFTuN';
+      let sb = null;
+      try {
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+          sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+      } catch (initError) {
+        console.error('Supabase initialization error:', initError);
+      }
+      const USER_EMAILS = { ADMIN001:'admin001@contractor.local', SEC001:'sec001@contractor.local', SEC002:'sec002@contractor.local', SEC003:'sec003@contractor.local' };
+      let db = [], currentUser = null, imageFiles = { id:null, car:null };
+
+      function bangkokDate(d=new Date()) { return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(d); }
+      function bangkokTime(d=new Date()) { return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d); }
+      function escapeHtml(v='') { return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+      async function login() {
+        const userId = document.getElementById('loginUserId').value.trim().toUpperCase();
+        const password = document.getElementById('loginPassword').value;
+        const email = USER_EMAILS[userId];
+        const msg = document.getElementById('loginMessage');
+        if (!sb) {
+          msg.textContent = 'ระบบเชื่อมต่อยังไม่พร้อม กรุณารีเฟรชหน้าเว็บ หรือเปลี่ยนเครือข่ายแล้วลองใหม่';
+          console.error('Supabase client unavailable. Check CDN script loading.');
+          return;
+        }
+        if (!email || !password) { msg.textContent = 'กรุณาตรวจสอบ User ID และ Password'; return; }
+        msg.textContent = 'กำลังเข้าสู่ระบบ...';
+        const button = document.getElementById('loginButton');
+        button.disabled = true;
+        button.textContent = 'กำลังเข้าสู่ระบบ...';
+        try {
+          const { error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          currentUser = userId;
+          document.getElementById('currentUserLabel').textContent = userId;
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('loginPassword').value = '';
+          await fetchCloudData();
+        } catch (error) {
+          console.error('Login error:', error);
+          msg.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + (error.message || 'กรุณาตรวจสอบ User ID และ Password');
+        } finally {
+          button.disabled = false;
+          button.textContent = 'เข้าสู่ระบบ';
+        }
+      }
+      // ผูกปุ่มผ่าน addEventListener และเปิดฟังก์ชันบน window
+      // เพื่อให้ทำงานได้แม้ inline onclick ถูก WebView บล็อก
+      window.login = login;
+      document.getElementById('loginButton').addEventListener('click', (event) => {
+        event.preventDefault();
+        login();
+      });
+      document.getElementById('loginPassword').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          login();
+        }
+      });
+      async function logout() {
+        await sb.auth.signOut(); currentUser = null; db = [];
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginUserId').value = '';
+        document.getElementById('loginMessage').textContent = '';
+      }
+      if (sb) {
+        sb.auth.getSession().then(({data}) => {
+          if (data.session) { sb.auth.signOut(); }
+        }).catch(error => console.error('Session check error:', error));
+      }
+
+      function entryTimeValue(value){
+        if(!value)return Number.MAX_SAFE_INTEGER;
+        const raw=String(value).trim();
+        const timeOnly=raw.match(/^(\\d{1,2}):(\\d{2})(?::(\\d{2}))?/);
+        if(timeOnly)return Number(timeOnly[1])*3600+Number(timeOnly[2])*60+Number(timeOnly[3]||0);
+        const parsed=Date.parse(raw);
+        return Number.isNaN(parsed)?Number.MAX_SAFE_INTEGER:parsed;
+      }
+      function sortEntriesOldestFirst(rows){
+        return [...rows].sort((a,b)=>{
+          const diff=entryTimeValue(a.time_in)-entryTimeValue(b.time_in);
+          if(diff!==0)return diff;
+          return String(a.id||'').localeCompare(String(b.id||''),undefined,{numeric:true});
+        });
+      }
+
+      function blobToDataURL(blob){
+        return new Promise((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onload=()=>resolve(reader.result);
+          reader.onerror=()=>reject(reader.error||new Error('อ่านไฟล์ภาพไม่สำเร็จ'));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      async function fetchCloudData() {
+        if (!currentUser) return;
+        const selectedDate = document.getElementById('reportDate').value || bangkokDate();
+        const { data, error } = await sb.from('contractor_entries').select('*').eq('work_date', selectedDate);
+        if (error) { alert('โหลดข้อมูลไม่สำเร็จ: '+error.message); return; }
+        db = sortEntriesOldestFirst(await Promise.all((data||[]).map(async row => {
+          const item = {...row, date:row.work_date, timeIn:bangkokTime(new Date(row.time_in)), timeOut:row.time_out?bangkokTime(new Date(row.time_out)):'', idNumber:row.id_last4, fullName:row.full_name, companyName:row.company_name, carPlate:row.car_plate, department:row.department, workLocation:row.work_location, teamSize:row.team_size};
+          if (row.id_card_path) {
+            const {data:blob,error:imageError}=await sb.storage.from('contractor-private').download(row.id_card_path);
+            if(!imageError&&blob) item.idCardImg=await blobToDataURL(blob);
+            else console.warn('โหลดรูปบัตรไม่สำเร็จ:',row.id_card_path,imageError);
+          }
+          if (row.car_image_path) {
+            const {data:blob,error:imageError}=await sb.storage.from('contractor-private').download(row.car_image_path);
+            if(!imageError&&blob) item.carImg=await blobToDataURL(blob);
+            else console.warn('โหลดรูปทะเบียนรถไม่สำเร็จ:',row.car_image_path,imageError);
+          }
+          return item;
+        })));
+        if (!document.getElementById('section-report').classList.contains('hidden')) loadReport();
+      }
+      async function uploadImage(file, kind) {
+        if (!file) return null;
+        const ext = file.type==='image/png'?'png':'jpg';
+        const path = currentUser+'/'+Date.now()+'-'+kind+'.'+ext;
+        const {error}=await sb.storage.from('contractor-private').upload(path,file,{contentType:file.type||'image/jpeg',upsert:false});
+        if(error) throw error;
+        return path;
+      }
+      function switchTab(tab) {
+        document.getElementById('section-register').classList.toggle('hidden',tab!=='register');
+        document.getElementById('section-report').classList.toggle('hidden',tab!=='report');
+        document.getElementById('tab-register').className=tab==='register'?'flex-1 py-2 text-center font-bold text-blue-600 border-b-2 border-blue-600':'flex-1 py-2 text-center font-semibold text-slate-500';
+        document.getElementById('tab-report').className=tab==='report'?'flex-1 py-2 text-center font-bold text-blue-600 border-b-2 border-blue-600':'flex-1 py-2 text-center font-semibold text-slate-500';
+        if(tab==='report'){document.getElementById('reportDate').value=bangkokDate();loadReport();}
+      }
+      async function compressImage(event,previewId,containerId) {
+        const input=event.target;
+        const file=input.files&&input.files[0];
+        if(!file)return;
+        if(!file.type.startsWith('image/')){
+          alert('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+          input.value='';
+          return;
+        }
+        let sourceUrl='';
+        try{
+          sourceUrl=URL.createObjectURL(file);
+          const img=new Image();
+          await new Promise((resolve,reject)=>{
+            img.onload=resolve;
+            img.onerror=()=>reject(new Error('เปิดไฟล์ภาพไม่สำเร็จ กรุณาลองถ่ายหรือเลือกรูปใหม่'));
+            img.src=sourceUrl;
+          });
+          const max=1600;
+          const scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+          const canvas=document.createElement('canvas');
+          canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+          canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+          const ctx=canvas.getContext('2d');
+          if(!ctx)throw new Error('ไม่สามารถประมวลผลภาพได้');
+          ctx.imageSmoothingEnabled=true;
+          ctx.imageSmoothingQuality='high';
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.82));
+          if(!blob)throw new Error('บีบอัดภาพไม่สำเร็จ กรุณาลองใหม่');
+          const optimized=new File([blob],(file.name||'image').replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg',lastModified:Date.now()});
+          const key=previewId==='idPreview'?'id':'car';
+          imageFiles[key]=optimized;
+          const preview=document.getElementById(previewId);
+          if(preview.dataset.objectUrl)URL.revokeObjectURL(preview.dataset.objectUrl);
+          const previewUrl=URL.createObjectURL(optimized);
+          preview.dataset.objectUrl=previewUrl;
+          preview.src=previewUrl;
+          document.getElementById(containerId).classList.remove('hidden');
+        }catch(error){
+          imageFiles[previewId==='idPreview'?'id':'car']=null;
+          input.value='';
+          alert('เตรียมรูปภาพไม่สำเร็จ: '+(error.message||error));
+        }finally{
+          if(sourceUrl)URL.revokeObjectURL(sourceUrl);
+        }
+      }
+      async function runOCR() {
+        const status=document.getElementById('ocrStatus'); status.textContent='กำลังอ่านชื่อจากภาพ...';
+        try { const result=await Tesseract.recognize(document.getElementById('idPreview').src,'tha+eng'); status.textContent='อ่านภาพแล้ว กรุณาตรวจสอบและกรอกชื่อด้วยตนเอง'; }
+        catch(e){status.textContent='อ่านภาพไม่สำเร็จ กรุณากรอกข้อมูลด้วยตนเอง';}
+      }
+      async function saveContractor() {
+        if(!currentUser){alert('กรุณาเข้าสู่ระบบ');return;}
+        const last4=document.getElementById('idNumber').value.trim();
+        const fullName=document.getElementById('fullName').value.trim();
+        const company=document.getElementById('companyName').value.trim()||'ไม่มี';
+        const plate=document.getElementById('carPlate').value.trim()||'ไม่มี';
+        const dept=document.getElementById('department').value;
+        const location=document.getElementById('workLocation').value.trim()||'พื้นที่โรงแรม';
+        const teamSize=parseInt(document.getElementById('teamSize').value||'1',10);
+        if(!/^\d{4}$/.test(last4)){alert('กรุณากรอกเลขบัตรประชาชน 4 ตัวท้าย');return;}
+        const today=bangkokDate();
+        const {data:active,error:qerr}=await sb.from('contractor_entries').select('id,full_name').eq('work_date',today).eq('id_last4',last4).is('time_out',null);
+        if(qerr){alert('ตรวจสอบรายการไม่สำเร็จ: '+qerr.message);return;}
+        if((active||[]).length>1){alert('พบรายการที่ยังไม่บันทึกเวลาออกมากกว่า 1 รายการสำหรับเลขท้ายนี้ กรุณาให้ผู้ดูแลตรวจสอบ');return;}
+        if((active||[]).length===1){
+          const {error}=await sb.from('contractor_entries').update({time_out:new Date().toISOString()}).eq('id',active[0].id);
+          if(error){alert('บันทึกเวลาออกไม่สำเร็จ: '+error.message);return;}
+          alert('บันทึกเวลาออกเรียบร้อย');
+        }else{
+          if(!fullName){alert('กรุณากรอกชื่อ-นามสกุลสำหรับลงทะเบียนเข้า');return;}
+          if(!Number.isInteger(teamSize)||teamSize<1||teamSize>500){alert('จำนวนทีมงานต้องอยู่ระหว่าง 1-500 คน');return;}
+          try{
+            const idPath=imageFiles.id?await uploadImage(imageFiles.id,'id-card'):null;
+            const carPath=imageFiles.car?await uploadImage(imageFiles.car,'vehicle'):null;
+            const {error}=await sb.from('contractor_entries').insert({work_date:today,id_last4:last4,full_name:fullName,company_name:company,car_plate:plate,department:dept,work_location:location,team_size:teamSize,id_card_path:idPath,car_image_path:carPath});
+            if(error)throw error;
+            alert('บันทึกเวลาเข้าเรียบร้อย');
+          }catch(e){alert('บันทึกข้อมูลไม่สำเร็จ: '+e.message);return;}
+        }
+        await fetchCloudData();clearForm();
+      }
+      function clearForm(){
+        ['idNumber','fullName','companyName','carPlate','workLocation'].forEach(id=>document.getElementById(id).value='');
+        document.getElementById('teamSize').value='1';
+        ['idCardImage','carImage'].forEach(id=>document.getElementById(id).value='');
+        ['idPreviewContainer','carPreviewContainer'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+        imageFiles={id:null,car:null};
+      }
+      async function deleteEntry(id){
+        if(!currentUser){alert('กรุณาเข้าสู่ระบบ');return;}
+        const row=db.find(x=>String(x.id)===String(id));
+        if(!row){alert('ไม่พบรายการที่ต้องการลบ');return;}
+        const name=row.fullName||row.full_name||'ผู้รับเหมา';
+        if(!confirm('ยืนยันลบข้อมูลทั้งหมดของ '+name+'?\\nข้อมูลผู้รับเหมาและรูปภาพจะถูกลบถาวร ไม่สามารถย้อนกลับได้'))return;
+        const {data:deletedRows,error}=await sb.from('contractor_entries').delete().eq('id',id).select('id');
+        if(error){
+          alert('ลบข้อมูลไม่สำเร็จ: '+error.message);
+          return;
+        }
+        if(!deletedRows||deletedRows.length===0){
+          alert('ระบบยังไม่ได้ลบข้อมูล อาจไม่มีสิทธิ์ลบรายการนี้ กรุณาตรวจสอบนโยบาย DELETE ของตาราง contractor_entries');
+          return;
+        }
+        const paths=[row.id_card_path,row.car_image_path].filter(Boolean);
+        let storageWarning='';
+        if(paths.length){
+          const {error:storageError}=await sb.storage.from('contractor-private').remove(paths);
+          if(storageError){
+            console.error('ลบรูปจาก Storage ไม่สำเร็จ:',storageError);
+            storageWarning='\\nหมายเหตุ: ลบข้อมูลรายการแล้ว แต่ลบไฟล์รูปบางส่วนไม่สำเร็จ: '+storageError.message;
+          }
+        }
+        await fetchCloudData();
+        alert('ลบข้อมูลผู้รับเหมาทั้งรายการเรียบร้อยแล้ว'+storageWarning);
+      }
+      function loadReport(){
+        const selected=document.getElementById('reportDate').value||bangkokDate();
+        const rows=sortEntriesOldestFirst(db.filter(x=>x.date===selected));
+        const total=rows.reduce((n,x)=>n+(Number(x.teamSize)||1),0);
+        document.getElementById('statTotal').textContent=total;
+        document.getElementById('statCompany').textContent=new Set(rows.map(x=>x.companyName)).size;
+        const tbody=document.getElementById('reportTableBody');
+        if(!rows.length){tbody.innerHTML='<tr><td colspan="5" class="text-center p-4 text-slate-400">ไม่พบข้อมูลในวันที่เลือก</td></tr>';return;}
+        tbody.innerHTML=rows.map(x=>'<tr class="border-b"><td class="p-2">เข้า: '+escapeHtml(x.timeIn)+'<br>ออก: '+(x.timeOut?escapeHtml(x.timeOut):'<span class="text-amber-600">กำลังปฏิบัติงาน</span>')+'</td><td class="p-2">'+escapeHtml(x.fullName)+'<br><span class="text-slate-400">เลขท้าย: '+escapeHtml(x.idNumber)+'</span></td><td class="p-2">'+escapeHtml(x.companyName)+'<br>สถานที่: '+escapeHtml(x.workLocation)+'<br>ทีมงาน: '+escapeHtml(x.teamSize)+' คน</td><td class="p-2">'+escapeHtml(x.carPlate)+'<br>'+escapeHtml(x.department)+'</td><td class="p-2"><button type="button" data-delete-id="'+escapeHtml(x.id)+'" class="bg-rose-600 text-white px-2 py-1 rounded text-xs">ลบ</button></td></tr>').join('');
+        tbody.querySelectorAll('[data-delete-id]').forEach(button=>{
+          button.addEventListener('click',()=>deleteEntry(button.getAttribute('data-delete-id')));
+        });
+      }
+      async function exportExcel(){
+        const selected=document.getElementById('reportDate').value;
+        const rows=db.filter(x=>x.date===selected);
+        if(!rows.length){alert('ไม่มีข้อมูลสำหรับส่งออก');return;}
+        const exportRows=rows.map(x=>({วันที่:x.date,เวลาเข้า:x.timeIn,เวลาออก:x.timeOut,เลขบัตร4ตัวท้าย:x.idNumber,ชื่อ:x.fullName,บริษัท:x.companyName,ทะเบียนรถ:x.carPlate,แผนก:x.department,สถานที่:x.workLocation,จำนวนทีมงาน:x.teamSize}));
+        const ws=XLSX.utils.json_to_sheet(exportRows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Contractors');XLSX.writeFile(wb,'Contractor_Report_'+selected+'.xlsx');
+      }
+      async function exportPDF(){
+        const selected=document.getElementById('reportDate').value,rows=db.filter(x=>x.date===selected).sort((a,b)=>new Date(a.time_in)-new Date(b.time_in));
+        if(!rows.length){alert('ไม่มีข้อมูลสำหรับส่งออก PDF');return;}
+
+        const pageSize=6, totalPages=Math.ceil(rows.length/pageSize);
+        const pages=[];
+        for(let i=0;i<rows.length;i+=pageSize){
+          const pageRows=rows.slice(i,i+pageSize);
+          let cards='';
+          pageRows.forEach((x,j)=>{
+            const idPhoto=x.idCardImg
+              ? '<img class="pdf-photo" src="'+escapeHtml(x.idCardImg)+'" alt="บัตรประชาชน">'
+              : '<div class="pdf-no-photo">ไม่มีรูปบัตรประชาชน</div>';
+            const carPhoto=x.carImg
+              ? '<img class="pdf-photo" src="'+escapeHtml(x.carImg)+'" alt="ทะเบียนรถ">'
+              : '<div class="pdf-no-photo">ไม่มีรูปทะเบียนรถ</div>';
+            cards+='<article class="pdf-record">'+
+              '<div class="pdf-images">'+
+                '<div class="pdf-image-wrap"><div class="pdf-image-label">บัตรประชาชน</div>'+idPhoto+'</div>'+
+                '<div class="pdf-image-wrap"><div class="pdf-image-label">ทะเบียนรถ</div>'+carPhoto+'</div>'+
+              '</div>'+
+              '<div class="pdf-details">'+
+                '<div class="pdf-name">'+(i+j+1)+'. '+escapeHtml(x.fullName)+'</div>'+
+                '<div><b>เลขบัตร 4 ตัวท้าย:</b> '+escapeHtml(x.idNumber||'-')+'</div>'+
+                '<div><b>บริษัท:</b> '+escapeHtml(x.companyName||'-')+' <b>ทีม:</b> '+escapeHtml(x.teamSize||'-')+' คน</div>'+
+                '<div><b>ทะเบียนรถ:</b> '+escapeHtml(x.carPlate||'-')+'</div>'+
+                '<div><b>แผนก:</b> '+escapeHtml(x.department||'-')+'</div>'+
+                '<div><b>สถานที่:</b> '+escapeHtml(x.workLocation||'-')+'</div>'+
+                '<div><b>เข้า:</b> '+escapeHtml(x.timeIn||'-')+' <b>ออก:</b> '+escapeHtml(x.timeOut||'กำลังปฏิบัติงาน')+'</div>'+
+              '</div></article>';
+          });
+          pages.push('<section class="pdf-page">'+
+            '<header class="pdf-header"><div class="pdf-title">รายงานผู้รับเหมาประจำวัน</div>'+
+            '<div class="pdf-subtitle">วันที่ '+escapeHtml(selected)+' <span>หน้า '+(pages.length+1)+' / '+totalPages+'</span></div></header>'+
+            '<div class="pdf-records">'+cards+'</div>'+
+            '<footer class="pdf-footer">ลงชื่อเจ้าหน้าที่ รปภ. ผู้ตรวจสอบ: ....................................................</footer>'+
+          '</section>');
+        }
+
+        const style='<style>'+
+          '@page{size:A4 portrait;margin:0}'+
+          '*{box-sizing:border-box}'+
+          '.pdf-root{width:210mm;font-family:Sarabun,sans-serif;color:#172033;background:#fff}'+
+          '.pdf-page{width:210mm;height:296mm;padding:6mm;display:flex;flex-direction:column;gap:1.2mm;overflow:hidden;background:#fff;page-break-after:always;break-after:page}'+
+          '.pdf-page:last-child{page-break-after:auto;break-after:auto}'+
+          '.pdf-header{height:13mm;flex:0 0 13mm;border-bottom:1.2px solid #334155;padding:0 1mm 1.5mm;display:flex;flex-direction:column;justify-content:center}'+
+          '.pdf-title{font-size:15pt;font-weight:700;line-height:1.2}'+
+          '.pdf-subtitle{font-size:9pt;display:flex;justify-content:space-between;margin-top:1mm}'+
+          '.pdf-records{flex:1;min-height:0;display:flex;flex-direction:column;gap:1mm}'+
+          '.pdf-record{flex:1;min-height:0;border:0.35mm solid #cbd5e1;border-radius:1.5mm;padding:1.3mm;display:flex;align-items:center;gap:2mm;overflow:hidden;break-inside:avoid;page-break-inside:avoid}'+
+          '.pdf-images{width:42%;height:100%;display:flex;gap:1.5mm;align-items:center;justify-content:space-between}'+
+          '.pdf-image-wrap{width:50%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}'+
+          '.pdf-image-label{font-size:7pt;font-weight:700;color:#475569;margin-bottom:0.7mm;white-space:nowrap}'+
+          '.pdf-photo{display:block;width:100%;height:30mm;max-height:calc(100% - 5mm);object-fit:contain;image-rendering:auto}'+
+          '.pdf-no-photo{width:100%;height:25mm;border:0.25mm dashed #cbd5e1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:7pt;color:#94a3b8;padding:1mm}'+
+          '.pdf-details{width:58%;font-size:8.3pt;line-height:1.42;overflow:hidden;overflow-wrap:anywhere}'+
+          '.pdf-name{font-size:10pt;font-weight:700;margin-bottom:1mm;color:#0f172a}'+
+          '.pdf-footer{height:7mm;flex:0 0 7mm;border-top:0.25mm solid #cbd5e1;padding-top:1.2mm;font-size:8pt}'+
+          '</style>';
+        const el=document.createElement('div');
+        el.className='pdf-root';
+        el.innerHTML=style+pages.join('');
+        document.body.appendChild(el);
+        try{
+          // โหลดภาพจาก Supabase แล้วแปลงเป็น Data URL ก่อนส่งเข้า html2canvas
+          // เพื่อหลีกเลี่ยงปัญหา CORS และภาพหายระหว่างสร้าง PDF
+          const imgs=[...el.querySelectorAll('img')];
+          await Promise.all(imgs.map(async img=>{
+            const source=img.getAttribute('src');
+            if(!source)return;
+            try{
+              const response=await fetch(source,{mode:'cors',cache:'no-store'});
+              if(!response.ok)throw new Error('HTTP '+response.status);
+              const blob=await response.blob();
+              const dataUrl=await new Promise((resolve,reject)=>{
+                const reader=new FileReader();
+                reader.onload=()=>resolve(reader.result);
+                reader.onerror=reject;
+                reader.readAsDataURL(blob);
+              });
+              img.removeAttribute('crossorigin');
+              img.src=dataUrl;
+              await new Promise((resolve,reject)=>{
+                if(img.complete&&img.naturalWidth>0){resolve();return;}
+                img.onload=resolve; img.onerror=reject;
+              });
+            }catch(err){
+              console.warn('ไม่สามารถฝังรูปใน PDF ได้:',source,err);
+              img.alt='ไม่สามารถโหลดรูปภาพ';
+            }
+          }));
+          await html2pdf().from(el).set({
+            margin:0,
+            filename:'Contractor_Report_'+selected+'.pdf',
+            image:{type:'jpeg',quality:0.99},
+            html2canvas:{scale:3,useCORS:true,allowTaint:false,backgroundColor:'#ffffff',imageTimeout:20000,logging:false},
+            jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},
+            pagebreak:{mode:['css']}
+          }).save();
+        }catch(e){alert('สร้าง PDF ไม่สำเร็จ: '+e.message);}
+        finally{el.remove();}
+      }
+      document.getElementById('reportDate').value=bangkokDate();
+    </script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(registration => {
+        console.log('PWA Service Worker ready:', registration.scope);
+      })
+      .catch(error => {
+        console.error('PWA registration failed:', error);
+      });
+  });
+}
+</script>
+</body>
+</html>
