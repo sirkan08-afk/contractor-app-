@@ -17,17 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        html { width:100%; min-width:0; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
-        body { width:100%; min-width:0; margin:0; font-family:'Sarabun',sans-serif; background-color:#f7f4f5; background-image:radial-gradient(ellipse at 8% 8%,rgba(128,0,79,.10),transparent 35%),radial-gradient(ellipse at 92% 92%,rgba(128,0,79,.08),transparent 38%),linear-gradient(135deg,#faf8f9 0%,#f1ecef 50%,#faf8f9 100%); background-attachment:fixed; }
-        /* Keep the installed WebAPK layout tied to the real phone viewport. */
-        #loginScreen { width:100%; min-height:100dvh; box-sizing:border-box; }
-        #loginScreen > div { width:min(92vw,420px); max-width:420px; box-sizing:border-box; }
-        header > div { width:100%; max-width:680px; box-sizing:border-box; }
-        main { width:calc(100% - 24px); max-width:680px; box-sizing:border-box; }
-        @media (max-width:480px) {
-          header > div { gap:10px; }
-          main { padding:12px; }
-        }
+        body { font-family: 'Sarabun', sans-serif; background-color:#f7f4f5; background-image: radial-gradient(ellipse at 8% 8%, rgba(128,0,79,.10), transparent 35%), radial-gradient(ellipse at 92% 92%, rgba(128,0,79,.08), transparent 38%), linear-gradient(135deg,#faf8f9 0%,#f1ecef 50%,#faf8f9 100%); background-attachment:fixed; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
