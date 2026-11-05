@@ -29,6 +29,7 @@
         <div><label class="text-sm font-semibold">User ID</label><input id="loginUserId" class="w-full mt-1 p-3 border rounded-lg" placeholder="เช่น ADMIN001" autocomplete="username"></div>
         <div><label class="text-sm font-semibold">Password</label><input id="loginPassword" type="password" class="w-full mt-1 p-3 border rounded-lg" placeholder="รหัสผ่าน" autocomplete="current-password"></div>
         <button id="loginButton" type="button" class="w-full bg-[#80004f] text-white font-bold p-3 rounded-lg">เข้าสู่ระบบ</button>
+        <button id="installContractorApp" type="button" class="w-full bg-slate-100 text-[#80004f] font-semibold p-2 rounded-lg" style="display:none">ติดตั้งแอป Contractor</button>
         <p id="loginMessage" class="text-sm text-center text-rose-600"></p>
       </div>
     </section>
@@ -224,7 +225,27 @@
           button.textContent = 'เข้าสู่ระบบ';
         }
       }
-      // ผูกปุ่มผ่าน addEventListener และเปิดฟังก์ชันบน window
+      let contractorInstallPrompt=null;
+const contractorInstallButton=document.getElementById('installContractorApp');
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();
+  contractorInstallPrompt=event;
+  if(contractorInstallButton)contractorInstallButton.style.display='block';
+});
+if(contractorInstallButton)contractorInstallButton.addEventListener('click',async()=>{
+  if(!contractorInstallPrompt){
+    alert('Chrome ยังไม่พร้อมให้ติดตั้ง กรุณาเปิดหน้านี้ด้วย Chrome แล้วเลือกเมนู ติดตั้งแอป');
+    return;
+  }
+  contractorInstallPrompt.prompt();
+  const choice=await contractorInstallPrompt.userChoice;
+  if(choice?.outcome==='accepted')contractorInstallButton.textContent='กำลังติดตั้ง...';
+  contractorInstallPrompt=null;
+});
+window.addEventListener('appinstalled',()=>{
+  if(contractorInstallButton)contractorInstallButton.style.display='none';
+});
+// ผูกปุ่มผ่าน addEventListener และเปิดฟังก์ชันบน window
       // เพื่อให้ทำงานได้แม้ inline onclick ถูก WebView บล็อก
       window.login = login;
       document.getElementById('loginButton').addEventListener('click', (event) => {
