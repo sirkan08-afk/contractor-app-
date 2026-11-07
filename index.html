@@ -194,7 +194,7 @@
       let sb = null;
       try {
         if (window.supabase && typeof window.supabase.createClient === 'function') {
-          sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
         }
       } catch (initError) {
         console.error('Supabase initialization error:', initError);
@@ -276,10 +276,40 @@ window.addEventListener('appinstalled',()=>{
         document.getElementById('loginUserId').value = '';
         document.getElementById('loginMessage').textContent = '';
       }
+      async function restoreSavedLogin() {
+        if (!sb) return;
+        const msg = document.getElementById('loginMessage');
+        try {
+          const { data, error } = await sb.auth.getSession();
+          if (error) throw error;
+          const session = data?.session;
+          if (!session?.user?.email) return;
+          const email = session.user.email.toLowerCase();
+          const matchedUser = Object.keys(USER_EMAILS).find(id => USER_EMAILS[id].toLowerCase() === email);
+          if (!matchedUser) {
+            if (msg) msg.textContent = 'พบเซสชันเดิม แต่ไม่พบ User ID ที่ตรงกัน กรุณาติดต่อผู้ดูแล';
+            return;
+          }
+          currentUser = matchedUser;
+          document.getElementById('currentUserLabel').textContent = matchedUser;
+          document.getElementById('loginScreen').classList.add('hidden');
+          document.getElementById('loginPassword').value = '';
+          document.getElementById('loginUserId').value = matchedUser;
+          await fetchCloudData();
+        } catch (error) {
+          console.error('Restore saved login error:', error);
+          if (msg) msg.textContent = 'กู้คืนการเข้าสู่ระบบไม่สำเร็จ: ' + (error.message || 'กรุณาลองใหม่');
+        }
+      }
       if (sb) {
-        sb.auth.getSession().then(({data}) => {
-          if (data.session) { sb.auth.signOut(); }
-        }).catch(error => console.error('Session check error:', error));
+        restoreSavedLogin();
+        sb.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            db = [];
+            document.getElementById('loginScreen').classList.remove('hidden');
+          }
+        });
       }
 
       function entryTimeValue(value){
