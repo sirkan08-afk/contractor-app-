@@ -172,7 +172,7 @@
                             <th class="p-2">ชื่อ - สกุล</th>
                             <th class="p-2">บริษัท / สถานที่</th>
                             <th class="p-2">ทะเบียนรถ</th>
-                            <th class="p-2">จัดการ</th>
+                            <th id="manageHeader" class="p-2 hidden">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="reportTableBody">
@@ -464,7 +464,7 @@ window.addEventListener('appinstalled',()=>{
         imageFiles={id:null,car:null};
       }
       async function deleteEntry(id){
-        if(!currentUser){alert('กรุณาเข้าสู่ระบบ');return;}
+        if(currentUser!=='ADMIN001'){alert('เฉพาะ ADMIN001 เท่านั้นที่สามารถจัดการ/ลบรายการได้');return;}
         const row=db.find(x=>String(x.id)===String(id));
         if(!row){alert('ไม่พบรายการที่ต้องการลบ');return;}
         const name=row.fullName||row.full_name||'ผู้รับเหมา';
@@ -497,11 +497,12 @@ window.addEventListener('appinstalled',()=>{
         document.getElementById('statTotal').textContent=total;
         document.getElementById('statCompany').textContent=new Set(rows.map(x=>x.companyName)).size;
         const tbody=document.getElementById('reportTableBody');
-        if(!rows.length){tbody.innerHTML='<tr><td colspan="5" class="text-center p-4 text-slate-400">ไม่พบข้อมูลในวันที่เลือก</td></tr>';return;}
-        tbody.innerHTML=rows.map(x=>'<tr class="border-b"><td class="p-2">เข้า: '+escapeHtml(x.timeIn)+'<br>ออก: '+(x.timeOut?escapeHtml(x.timeOut):'<span class="text-amber-600">กำลังปฏิบัติงาน</span>')+'</td><td class="p-2">'+escapeHtml(x.fullName)+'<br><span class="text-slate-400">เลขท้าย: '+escapeHtml(x.idNumber)+'</span></td><td class="p-2">'+escapeHtml(x.companyName)+'<br>สถานที่: '+escapeHtml(x.workLocation)+'<br>ทีมงาน: '+escapeHtml(x.teamSize)+' คน</td><td class="p-2">'+escapeHtml(x.carPlate)+'<br>'+escapeHtml(x.department)+'</td><td class="p-2"><button type="button" data-delete-id="'+escapeHtml(x.id)+'" class="bg-rose-600 text-white px-2 py-1 rounded text-xs">ลบ</button></td></tr>').join('');
-        tbody.querySelectorAll('[data-delete-id]').forEach(button=>{
-          button.addEventListener('click',()=>deleteEntry(button.getAttribute('data-delete-id')));
-        });
+        const canManage=currentUser==='ADMIN001';
+        const manageHeader=document.getElementById('manageHeader');
+        if(manageHeader)manageHeader.classList.toggle('hidden',!canManage);
+        if(!rows.length){tbody.innerHTML='<tr><td colspan="'+(canManage?5:4)+'" class="text-center p-4 text-slate-400">ไม่พบข้อมูลในวันที่เลือก</td></tr>';return;}
+        tbody.innerHTML=rows.map(x=>'<tr class="border-b"><td class="p-2">เข้า: '+escapeHtml(x.timeIn)+'<br>ออก: '+(x.timeOut?escapeHtml(x.timeOut):'<span class="text-amber-600">กำลังปฏิบัติงาน</span>')+'</td><td class="p-2">'+escapeHtml(x.fullName)+'<br><span class="text-slate-400">เลขท้าย: '+escapeHtml(x.idNumber)+'</span></td><td class="p-2">'+escapeHtml(x.companyName)+'<br>สถานที่: '+escapeHtml(x.workLocation)+'<br>ทีมงาน: '+escapeHtml(x.teamSize)+' คน</td><td class="p-2">'+escapeHtml(x.carPlate)+'<br>'+escapeHtml(x.department)+'</td>'+(canManage?'<td class="p-2"><button type="button" data-delete-id="'+escapeHtml(x.id)+'" class="bg-rose-600 text-white px-2 py-1 rounded text-xs">ลบ</button></td>':'')+'</tr>').join('');
+        if(canManage)tbody.querySelectorAll('[data-delete-id]').forEach(button=>button.addEventListener('click',()=>deleteEntry(button.getAttribute('data-delete-id'))));
       }
       async function exportExcel(){
         const selected=document.getElementById('reportDate').value;
