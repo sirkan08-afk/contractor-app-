@@ -271,6 +271,10 @@ window.addEventListener('appinstalled',()=>{
         }
       });
       async function logout() {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'PORTAL_REQUEST_LOGOUT' }, location.origin);
+          return;
+        }
         await sb.auth.signOut(); currentUser = null; db = [];
         document.getElementById('loginScreen').classList.remove('hidden');
         document.getElementById('loginUserId').value = '';
