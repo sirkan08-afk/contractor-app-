@@ -1,4 +1,4 @@
-const CACHE_NAME = 'contractor-registration-v7';
+const CACHE_NAME = 'contractor-registration-v8';
 
 const APP_FILES = [
   './',
